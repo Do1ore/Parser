@@ -1,8 +1,11 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,10 +15,24 @@ namespace Parser
 {
     public partial class Form1 : Form
     {
+        private const string Value = "USD_in";
+        public string USDinBelarusbank = "";
         public Form1()
         {
+            
             InitializeComponent();
+            var request = new GetRequest("https://belarusbank.by/api/kursExchange?city=Брест");
+            request.Run();
+
+            var responce = request.Responce;
+
+            JArray jsonArray = JArray.Parse(responce);
+            dynamic data = JObject.Parse(jsonArray[0].ToString());
+            USDinBelarusbank = Convert.ToString(data.USD_in);
+            
+
         }
+          
 
         public double[] arr { get; set; }
         public static short a = 0;
@@ -47,20 +64,16 @@ namespace Parser
             
             return Rate;
         }
-        public string BelarusBank()//did not work
+        public string BelarusBank()
         {
-            System.Net.WebClient wc = new System.Net.WebClient();
-            string Responce = wc.DownloadString("https://belarusbank.by");
-            string Rate = System.Text.RegularExpressions.Regex.Match(Responce, @"<td\sclass=""currency-table__cell-value"">\n\s([0-9]+\.[0-9]+)").Groups[1].Value;
-            
-            return Rate;
+            return USDinBelarusbank;
         }
 
         public string Belapb()
         {
             System.Net.WebClient wc = new System.Net.WebClient();
             string Responce = wc.DownloadString("https://www.belapb.by");
-            string Rate = System.Text.RegularExpressions.Regex.Match(Responce, @"href=""/rus/nalichnye-kursy-valut/vse-kursy-po-gorodu/\?bank=2&ratesBlock=1&more=3&CITY_ID=24811&DATE_RATE_DAY=04&DATE_RATE_MONTH=07&DATE_RATE_YEAR=2022&VAL1=USD&SORT=FROM"">([0-9]+\.[0-9]+)</td>").Groups[1].Value;
+            string Rate = System.Text.RegularExpressions.Regex.Match(Responce, @"href=""/rus/nalichnye-kursy-valut/vse-kursy-po-gorodu/\?bank=2&ratesBlock=1&more=3&CITY_ID=24811&DATE_RATE_DAY=07&DATE_RATE_MONTH=07&DATE_RATE_YEAR=2022&VAL1=USD&SORT=FROM"">([0-9]+\.[0-9]+)</td>").Groups[1].Value;
             
             return Rate;
         }
@@ -74,6 +87,12 @@ namespace Parser
             label4.Text = "Банк Решение: " + BankReshenie();
             label5.Text = "Беларусбанк: " + BelarusBank();
             label6.Text = "Белагропромбанк: " + Belapb();
+           
+
+        }
+
+        private void pictureBox1_Click(object sender, EventArgs e)
+        {
 
         }
     }
