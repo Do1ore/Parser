@@ -1,5 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Chrome;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -71,11 +73,26 @@ namespace Parser
 
         public string Belapb()
         {
-            System.Net.WebClient wc = new System.Net.WebClient();
-            string Responce = wc.DownloadString("https://www.belapb.by");
-            string Rate = System.Text.RegularExpressions.Regex.Match(Responce, @"href=""/rus/nalichnye-kursy-valut/vse-kursy-po-gorodu/\?bank=2&ratesBlock=1&more=3&CITY_ID=24811&DATE_RATE_DAY=07&DATE_RATE_MONTH=07&DATE_RATE_YEAR=2022&VAL1=USD&SORT=FROM"">([0-9]+\.[0-9]+)</td>").Groups[1].Value;
-            
-            return Rate;
+            IWebDriver webDriver = new ChromeDriver();
+            webDriver.Url = "https://www.belapb.by";
+
+            for (int i = 0; i < 10; i++)
+            {
+                try
+                {
+                    webDriver.FindElement(By.XPath(@"//*[@id=""aj_tab2""]/table/tbody/tr[2]/td[2]/a")).GetCssValue("a");
+                }
+                catch (Exception)
+                {
+                    Task.Delay(1000);
+                    break;
+                    
+                }
+            }
+
+            var parsed = webDriver.FindElement(By.CssSelector(@"#aj_tab2 > table > tbody > tr:nth-child(2) > td:nth-child(2) > a")).GetAttribute("textContent");
+
+            return Convert.ToString(parsed);
         }
         
         private void Form1_Load(object sender, EventArgs e)
